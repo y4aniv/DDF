@@ -29,8 +29,7 @@ const Root = () => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [content, setContent] = useState("");
-  const [translatedText, setTranslatedText] = useState("");
-   const [displayedWords, setDisplayedWords] = useState<string[]>([]);
+  const [displayedWords, setDisplayedWords] = useState<string[]>([]);
   const [showResult, setShowResult] = useState(false);
   const [showRestart, setShowRestart] = useState(false);
 
@@ -54,12 +53,9 @@ const Root = () => {
       try {
         const result = await getTranslation(content.trim(), selectedVoice?.id);
 
-        // Passer à l'état de résultat
-        setTranslatedText(result.translation);
         setShowResult(true);
         setSending(false);
 
-        // Préparer et jouer l'audio
         const audioData = Uint8Array.from(atob(result.audio), (c) =>
           c.charCodeAt(0)
         );
@@ -67,7 +63,6 @@ const Root = () => {
         const audioUrl = URL.createObjectURL(audioBlob);
         const audio = new Audio(audioUrl);
 
-        // Calculer la durée approximative par mot
         const words = result.translation.split(" ");
         const audioDuration = await new Promise<number>((resolve) => {
           audio.onloadedmetadata = () => {
@@ -76,14 +71,12 @@ const Root = () => {
         });
         const timePerWord = (audioDuration * 1000) / words.length;
 
-        // Jouer l'audio
         audio.play();
 
-        // Afficher le texte mot par mot
         let currentIndex = 0;
         const intervalId = setInterval(() => {
           if (currentIndex < words.length) {
-             setDisplayedWords(words.slice(0, currentIndex + 1));
+            setDisplayedWords(words.slice(0, currentIndex + 1));
             currentIndex++;
           } else {
             clearInterval(intervalId);
@@ -92,7 +85,7 @@ const Root = () => {
 
         audio.onended = () => {
           URL.revokeObjectURL(audioUrl);
-           setDisplayedWords(words);
+          setDisplayedWords(words);
           clearInterval(intervalId);
           setShowRestart(true);
         };
@@ -106,8 +99,7 @@ const Root = () => {
   const handleRestart = () => {
     setShowResult(false);
     setShowRestart(false);
-     setDisplayedWords([]);
-    setTranslatedText("");
+    setDisplayedWords([]);
     setContent("");
   };
 
@@ -140,21 +132,21 @@ const Root = () => {
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
             className="flex flex-col items-center gap-6 max-w-2xl px-6"
           >
-             <div className="text-2xl text-center font-medium flex flex-wrap justify-center gap-x-2">
-               {displayedWords.map((word, index) => (
-                 <motion.span
-                   key={index}
-                   initial={{ opacity: 0, y: 10 }}
-                   animate={{ opacity: 1, y: 0 }}
-                   transition={{
-                     duration: 0.3,
-                     ease: [0.22, 1, 0.36, 1],
-                   }}
-                 >
-                   {word}
-                 </motion.span>
-               ))}
-             </div>
+            <div className="text-2xl text-center font-medium flex flex-wrap justify-center gap-x-2">
+              {displayedWords.map((word, index) => (
+                <motion.span
+                  key={`${index}-${word}`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.3,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                >
+                  {word}
+                </motion.span>
+              ))}
+            </div>
             <AnimatePresence>
               {showRestart && (
                 <motion.div

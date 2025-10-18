@@ -35,9 +35,22 @@ const getTranslation = async (content: string, voiceId?: string) => {
     ],
   });
 
-  const voice = await elevenlabsClient.textToSpeech.convert(voiceId as string, {
+  const ttsOptions = {
     text: translation.choices[0].message.content as string,
-  });
+    modelId: "eleven_multilingual_v2",
+    outputFormat: "mp3_44100_128",
+    voiceSettings: {
+      stability: 0.4,
+      similarityBoost: 0.85,
+      style: 0.35,
+      useSpeakerBoost: true,
+    },
+  } satisfies Parameters<typeof elevenlabsClient.textToSpeech.convert>[1];
+
+  const voice = await elevenlabsClient.textToSpeech.convert(
+    voiceId as string,
+    ttsOptions
+  );
 
   const chunks: Uint8Array[] = [];
   const reader = voice.getReader();
